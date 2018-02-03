@@ -1,0 +1,87 @@
+
+# -----------------------------------------------------------------------------------------
+# Basic Settings
+
+Options -indexes
+Options +FollowSymlinks
+RewriteEngine On
+
+
+# -----------------------------------------------------------------------------------------
+# Some PHP related items
+
+# php_flag magic_quotes_gpc Off
+# php_value memory_limit 10M
+# php_value post_max_size 10M
+
+# php_value upload_max_filesize 10M
+# php_flag file_uploads On
+# php_value max_execution_time 10000
+
+
+# -----------------------------------------------------------------------------------------
+# Prevent common exploits
+# Block common exploits and redirect to login page
+
+RewriteCond %{QUERY_STRING} mosConfig_[a-zA-Z_]{1,21}(=|\%3D) [OR]
+RewriteCond %{QUERY_STRING} base64_encode.*\(.*\) [OR]
+RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ login.php [F,L]
+
+
+# ---------------------------------------------------------
+# Force www or no-www in URL
+# Option 1: "www.yoursite.com"
+#   RewriteCond %{HTTP_HOST} ^yoursite\.com$
+#   RewriteRule ^(.*)$ http://www.yoursite.com/$1 [R=301,L]
+# Options 2: "yoursite.com"
+
+# RewriteCond %{HTTP_HOST} ^www\.yoursite\.com$
+# RewriteRule ^(.*)$ http://yoursite.com/$1 [R=301,L]
+
+
+# ---------------------------------------------------------
+# Compress using gzip
+
+#<ifmodule mod_deflate.c>
+#	AddOutputFilterByType DEFLATE text/text text/html text/plain text/xml text/css application/x-javascript application/javascript
+#</ifmodule>
+
+
+# ---------------------------------------------------------
+# Main rewrites
+
+# Clean links for standard pages
+RewriteRule ^cart/?$ cart.php [NC,QSA,L]
+RewriteRule ^login/?$ login.php [NC,QSA,L]
+RewriteRule ^logout/?$ logout.php [NC,QSA,L]
+RewriteRule ^events/view/(.*)/(.*)/?$ event.php?id=$2 [NC,QSA,L]
+RewriteRule ^events/(.*)/(.*)/?$ calendar.php?id=$2 [NC,QSA,L]
+RewriteRule ^manage/billing?$ manage/billing_history.php [NC,QSA,L]
+RewriteRule ^manage/credit_cards?$ manage/credit_cards.php [NC,QSA,L]
+RewriteRule ^manage/events_attended?$ manage/events.php [NC,QSA,L]
+RewriteRule ^manage/files?$ manage/uploads.php [NC,QSA,L]
+RewriteRule ^manage/invoices?$ manage/invoices.php [NC,QSA,L]
+RewriteRule ^manage/member_news?$ manage/announcements.php [NC,QSA,L]
+RewriteRule ^manage/subscriptions?$ manage/subscriptions.php [NC,QSA,L]
+RewriteRule ^manage/update?$ manage/update_account.php [NC,QSA,L]
+RewriteRule ^news/(.*)/(.*)/?$ news.php?id=$2 [NC,QSA,L]
+RewriteRule ^register/(.*)/(.*)/?$ register.php?id=$2&action=reset [NC,QSA,L]
+RewriteRule ^register/?$ register.php?action=reset [NC,QSA,L]
+RewriteRule ^shop/view/(.*)/(.*)/?$ catalog.php?id=$2 [NC,QSA,L]
+RewriteRule ^shop/(.*)/(.*)/?$ catalog.php?category=$2 [NC,QSA,L]
+
+
+# All Others
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?in=$1 [L,QSA]
+
+
+# ---------------------------------------------------------
+# Errors Screens
+
+errorDocument 404 error.php?type=404&filename=%{SCRIPT_FILENAME}
+errorDocument 500 error.php?type=500
